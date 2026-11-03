@@ -1,0 +1,147 @@
+{% extends 'core/base.html' %} <!-- Mantém os relatórios dentro da navegação e do layout comuns. -->
+
+{% block content %}
+<h2>RELATÓRIOS ANTERIORES</h2>
+
+<h3>Chamados e requisições</h3>
+<div class="relatorios-chamados-wrap"> <!-- Permite rolagem própria da tabela em telas estreitas. -->
+<table class="relatorios-chamados">
+  <tr>
+    <th>ID</th>
+    <th>Solicitante</th>
+    <th>Peça</th>
+    <th>Equipamento</th>
+    <th>Destino</th>
+    <th>Data</th>
+    <th>Status</th>
+    {% if is_app_admin %}<th>Ação</th>{% endif %} <!-- Reserva a coluna de alteração de status para administradores. -->
+  </tr>
+  {% for chamado in chamados_lista %} <!-- Monta uma linha para cada chamado registrado. -->
+  <tr>
+    <td>{{ chamado.id_servico }}</td>
+    <td>{{ chamado.solicitante }}</td>
+    <td>{{ chamado.id_peca }}</td>
+    <td>{{ chamado.equipamentos|default:"-" }}</td>
+    <td>{{ chamado.local|default:"-" }}</td>
+    <td>{{ chamado.data_abertura|date:"d/m/Y" }}</td>
+    <td>
+      {% if chamado.status == 'aberta' %} <!-- Escolhe a aparência conforme o estado atual do chamado. -->
+        <span class="chamado-status chamado-status--aberta">{{ chamado.get_status_display }}</span>
+      {% elif chamado.status == 'em andamento' %} <!-- Usa uma classe distinta para chamados em andamento. -->
+        <span class="chamado-status chamado-status--andamento">{{ chamado.get_status_display }}</span>
+      {% else %}
+        <span class="chamado-status chamado-status--concluido">{{ chamado.get_status_display }}</span>
+      {% endif %}
+    </td>
+    {% if is_app_admin %} <!-- Exibe o controle de status somente a administradores. -->
+    <td class="status-chamado-cell">
+      <form class="status-chamado-form" method="post" action="{% url 'alterar_status_chamado' chamado.id_servico %}">
+        {% csrf_token %} <!-- Protege a alteração enviada pelo formulário POST. -->
+        <label class="sr-only" for="status-chamado-{{ chamado.id_servico }}">Status do chamado {{ chamado.id_servico }}</label>
+        <select id="status-chamado-{{ chamado.id_servico }}" name="status"> <!-- Associa um seletor único ao chamado desta linha. -->
+          <option value="aberta" {% if chamado.status == 'aberta' %}selected{% endif %}>Aberta</option>
+          <option value="em andamento" {% if chamado.status == 'em andamento' %}selected{% endif %}>Em andamento</option>
+          <option value="concluido" {% if chamado.status == 'concluido' %}selected{% endif %}>Concluído</option>
+        </select>
+        <button type="submit" aria-label="Salvar status do chamado {{ chamado.id_servico }}">Atualizar</button>
+      </form>
+    </td>
+    {% endif %}
+  </tr>
+  {% empty %} <!-- Informa quando ainda não existem chamados no relatório. -->
+  <tr><td colspan="{% if is_app_admin %}8{% else %}7{% endif %}">Nenhum chamado registrado.</td></tr>
+  {% endfor %}
+</table>
+</div>
+
+<h3>Entrada/Saída Peças</h3>
+{% if perms.core.add_estoque %} <!-- Libera o registro de entrada apenas a quem pode adicionar movimentações. -->
+<form class="entrada-estoque-form" method="post" action="{% url 'registrar_entrada_estoque' %}"> <!-- Envia uma nova entrada de estoque à view específica. -->
+  {% csrf_token %} <!-- Protege a operação de entrada enviada por POST. -->
+  <div>
+    {{ form_entrada.peca.label_tag }}
+    {{ form_entrada.peca }}
+  </div>
+  <div>
+    {{ form_entrada.quantidade.label_tag }}
+    {{ form_entrada.quantidade }}
+  </div>
+  <div>
+    {{ form_entrada.fornecedor.label_tag }}
+    {{ form_entrada.fornecedor }}
+  </div>
+  <button type="submit">Registrar entrada</button>
+</form>
+{% endif %}
+<div class="relatorios-movimentacoes-wrap"> <!-- Mantém a tabela de movimentações utilizável em telas menores. -->
+<table class="relatorios-movimentacoes">
+  <tr>
+    <th>ID</th>
+    <th>Peça</th>
+    <th>Entrada</th>
+    <th>Saída</th>
+    <th>Saldo</th>
+    <th>Data Entrada</th>
+    <th>Data Saída</th>
+    {% if perms.core.change_estoque %}<th>Ação</th>{% endif %} <!-- Só inclui a coluna de baixa para quem pode alterar o estoque. -->
+  </tr>
+  {% for mov in movimentacoes %} <!-- Exibe os dados de cada movimentação de estoque. -->
+  <tr>
+    <td>{{ mov.id_estoque }}</td>
+    <td>{{ mov.id_peca }}</td>
+    <td>{{ mov.quantidade }}</td>
+    <td>{{ mov.quantidade_saida }}</td>
+    <td>{{ mov.quantidade_disponivel }}</td>
+    <td>{{ mov.data_entrada|date:"d/m/Y" }}</td>
+    <td>{{ mov.data_saida|date:"d/m/Y"|default:"-" }}</td>
+    {% if perms.core.change_estoque %} <!-- Restringe a ação de saída a usuários autorizados. -->
+    <td>
+      {% if mov.quantidade_disponivel > 0 %} <!-- Só permite registrar saída quando ainda há saldo disponível. -->
+      <form class="saida-estoque-form" method="post" action="{% url 'registrar_saida_estoque' mov.id_estoque %}">
+        {% csrf_token %} <!-- Protege a requisição que registra a baixa. -->
+        <label class="sr-only" for="quantidade-saida-{{ mov.id_estoque }}">Quantidade de saída do movimento {{ mov.id_estoque }}</label>
+        <input id="quantidade-saida-{{ mov.id_estoque }}" name="quantidade" type="number" min="1" max="{{ mov.quantidade_disponivel }}" value="1" required> <!-- Impede quantidade menor que um ou maior que o saldo disponível. -->
+        <button type="submit">Baixar</button>
+      </form>
+      {% else %}
+      <span class="saida-estoque-registrada">Sem saldo</span>
+      {% endif %}
+    </td>
+    {% endif %}
+  </tr>
+  {% empty %} <!-- Mostra um estado vazio quando não há movimentações registradas. -->
+  <tr><td colspan="{% if perms.core.change_estoque %}8{% else %}7{% endif %}">Nenhuma movimentação registrada.</td></tr>
+  {% endfor %}
+</table>
+</div>
+
+{% if is_app_admin %} <!-- Reserva a tabela de orçamentos para a visão administrativa. -->
+<h3 style="margin-top:24px;">
+  Orçamentos
+  <a class="botao1" href="{% url 'orcamentos_historico' %}" style="float:right;">Ver em gráfico</a> <!-- Abre o histórico completo com visualização gráfica. -->
+</h3>
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Veículo</th>
+    <th>Valor</th>
+    <th>Data do Orçamento</th>
+    <th>Status</th>
+    <th>PDF</th>
+  </tr>
+  {% for orc in orcamentos %} <!-- Lista cada orçamento com acesso ao arquivo PDF correspondente. -->
+  <tr>
+    <td>{{ orc.id_orcamento }}</td>
+    <td>{{ orc.id_veiculo }}</td>
+    <td>R$ {{ orc.valor }}</td>
+    <td>{{ orc.data_orcamento|date:"d/m/Y" }}</td>
+    <td>{{ orc.get_status_display }}</td>
+    <td><a class="botao1" href="{% url 'orcamento_pdf' orc.id_orcamento %}">Baixar PDF</a></td>
+  </tr>
+  {% empty %} <!-- Informa quando ainda não há orçamentos para exibir. -->
+  <tr><td colspan="6">Nenhum orçamento registrado.</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% endblock %}

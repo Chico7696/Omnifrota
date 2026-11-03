@@ -1,0 +1,54 @@
+{% extends 'core/base.html' %} <!-- Usa o layout compartilhado do sistema. -->
+
+{% block content %}
+<section class="gerenciar-cargos">
+  <header class="gerenciar-cargos__heading">
+    <p class="gerenciar-cargos__eyebrow">ADMINISTRAÇÃO</p>
+    <h1>Gerenciar cargos</h1>
+    <p>Funcionários cadastrados começam com o cargo de estoque. Altere o cargo conforme a função de cada pessoa.</p>
+  </header>
+
+  <section class="gerenciar-cargos__card">
+    <h2>Alterar cargo do funcionário</h2>
+    <p class="gerenciar-cargos__hint">Selecione uma conta e escolha o nível de acesso adequado.</p>
+    <form method="post" class="gerenciar-cargos__form"> <!-- Envia a alteração de cargo para processamento pela view. -->
+      {% csrf_token %} <!-- Protege o formulário POST. -->
+      {{ form.as_p }}
+      <button type="submit">Atualizar cargo</button>
+    </form>
+  </section>
+
+  <section class="gerenciar-cargos__lista">
+    <div class="gerenciar-cargos__lista-heading">
+      <h2>Funcionários</h2>
+      <span>{{ usuarios_com_cargo|length }} usuário{{ usuarios_com_cargo|length|pluralize:"s" }}</span> <!-- Conta os usuários e pluraliza o rótulo conforme o total. -->
+    </div>
+    <div class="gerenciar-cargos__table-wrap">
+      <table class="gerenciar-cargos__table">
+        <thead>
+          <tr>
+            <th>USUÁRIO</th>
+            <th>CARGO ATUAL</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in usuarios_com_cargo %} <!-- Lista cada usuário junto ao cargo atual. -->
+          <tr>
+            <td class="gerenciar-cargos__username">{{ item.usuario.username }}</td>
+            <td>
+              <span class="gerenciar-cargos__badge
+                {% if item.cargo == 'Administrador' %}gerenciar-cargos__badge--admin
+                {% elif item.cargo == 'Orçamento' %}gerenciar-cargos__badge--orcamento
+                {% elif item.cargo == 'Estoque' %}gerenciar-cargos__badge--estoque
+                {% endif %}">{{ item.cargo }}</span>
+            </td>
+          </tr>
+          {% empty %} <!-- Exibe uma linha vazia quando não há usuários para listar. -->
+          <tr><td class="gerenciar-cargos__empty" colspan="2">Nenhum funcionário cadastrado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'core/base.html' %} <!-- Reaproveita a estrutura global do site. -->
+
+{% block content %}
+<div class="container">
+    <h2>Criar conta</h2>
+
+    <form method="post" action="{% url 'registrar' %}"> <!-- Envia os novos dados de conta para a rota de registro. -->
+        {% csrf_token %} <!-- Inclui o token obrigatório para proteger o envio POST. -->
+
+        <div class="form-group">
+            <label for="username">Usuário:</label>
+            <input type="text" class="form-control" id="username" name="username" required> <!-- Define o nome de usuário enviado à view. -->
+        </div>
+
+        <div class="form-group">
+            <label for="email">E-mail:</label>
+            <input type="email" class="form-control" id="email" name="email" required> <!-- Valida o formato do e-mail no navegador antes do envio. -->
+        </div>
+
+        <div class="form-group">
+            <label for="password">Senha:</label>
+            <input type="password" class="form-control" id="password" name="password" required> <!-- Oculta a senha digitada e a envia no campo password. -->
+        </div>
+
+        <button type="submit" class="btn btn-primary">Registrar</button>
+    </form>
+
+    <p><a href="{% url 'login' %}">Já tenho uma conta</a></p> <!-- Leva ao formulário de autenticação para contas existentes. -->
+</div>
+{% endblock %}

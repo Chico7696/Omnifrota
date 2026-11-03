@@ -1,0 +1,53 @@
+{% extends "core/base.html" %} <!-- Renderiza o gráfico dentro do layout comum. -->
+{% load static %} <!-- Habilita o carregamento do Chart.js pelos arquivos estáticos. -->
+
+{% block content %}
+<h2>ORÇAMENTO IA</h2>
+
+{% if orcamento %} <!-- Mostra os dados e o gráfico quando o orçamento solicitado existe. -->
+  <p>
+    Veículo: <strong>{{ orcamento.id_veiculo.tipo }} {{ orcamento.id_veiculo.modelo }}</strong>
+    &nbsp;|&nbsp; Valor previsto (total): <strong>R$ {{ orcamento.valor }}</strong>
+    &nbsp;|&nbsp; Taxa de desvio: <strong>{{ orcamento.taxa_desvio }}</strong>
+    &nbsp;|&nbsp; Status: <strong>{{ orcamento.get_status_display }}</strong>
+  </p>
+
+  <canvas id="graficoOrcamento" height="120"></canvas>
+
+  {{ meses|json_script:"meses-data" }} <!-- Transfere os rótulos dos meses para o script em JSON seguro. -->
+  {{ previsao|json_script:"previsao-data" }} <!-- Transfere a série de previsões sem inserir dados diretamente no JavaScript. -->
+
+  <script src="{% static 'js/chart.umd.min.js' %}"></script> <!-- Carrega localmente a biblioteca usada para desenhar o gráfico. -->
+  <script>
+    const meses = JSON.parse(document.getElementById('meses-data').textContent); // Lê os meses serializados pelo template.
+    const previsao = JSON.parse(document.getElementById('previsao-data').textContent); // Lê os valores previstos para cada mês.
+
+    if (typeof Chart === 'undefined') { // Mostra uma mensagem substituta se o Chart.js não carregar.
+      document.getElementById('graficoOrcamento').insertAdjacentHTML(
+        'afterend',
+        '<p class="erro-grafico">Não foi possível carregar a biblioteca de gráficos.</p>'
+      );
+    } else {
+    new Chart(document.getElementById('graficoOrcamento'), { // Desenha a previsão mensal no elemento canvas da página.
+      type: 'bar',
+      data: {
+        labels: meses,
+        datasets: [{
+          label: 'Previsão de gastos (R$)',
+          data: previsao,
+          backgroundColor: '#ffa832',
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+    }
+  </script>
+{% else %} <!-- Orienta o usuário a criar um orçamento se não houver dados para exibir. -->
+  <p>Nenhum orçamento calculado ainda. <a href="{% url 'orcamento_form' %}">Calcular um novo orçamento</a>.</p>
+{% endif %}
+
+{% endblock %}

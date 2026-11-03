@@ -1,0 +1,287 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#124b38">
+  <title>Neymar, o protagonista | Página de humor</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --forest: #124b38;
+      --lime: #c9ef55;
+      --sun: #f5bd38;
+      --paper: #f6f1e7;
+      --ink: #17251f;
+      --muted: #59645d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    a { color: inherit; }
+
+    .page { min-height: 100vh; overflow: hidden; }
+
+    .masthead {
+      min-height: 76px;
+      padding: 18px clamp(22px, 6vw, 88px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid rgba(23, 37, 31, .18);
+      font: 700 11px/1.2 Arial, sans-serif;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+
+    .masthead__mark { display: flex; align-items: center; gap: 10px; }
+    .masthead__star { color: #a64b34; font-size: 19px; }
+    .masthead__label { color: var(--muted); text-align: right; }
+
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(330px, .82fr);
+      min-height: min(760px, calc(100vh - 76px));
+      background: var(--forest);
+      color: var(--paper);
+    }
+
+    .hero__copy {
+      z-index: 1;
+      align-self: center;
+      padding: 76px 0 84px clamp(22px, 8vw, 124px);
+      max-width: 760px;
+      animation: rise-in .7s ease-out both;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 22px;
+      color: var(--lime);
+      font: 700 11px/1.3 Arial, sans-serif;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before { width: 30px; height: 2px; content: ""; background: var(--sun); }
+
+    h1 {
+      max-width: 700px;
+      margin: 0;
+      font-size: clamp(68px, 9.5vw, 144px);
+      font-weight: 400;
+      line-height: .82;
+      letter-spacing: 0;
+    }
+
+    h1 span { display: block; color: var(--lime); font-style: italic; }
+
+    .hero__lead {
+      max-width: 390px;
+      margin: 30px 0 0;
+      color: rgba(246, 241, 231, .82);
+      font: 16px/1.65 Arial, sans-serif;
+    }
+
+    .hero__button {
+      display: inline-flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 32px;
+      padding: 13px 0;
+      color: var(--sun);
+      border-bottom: 1px solid var(--sun);
+      font: 700 11px/1.2 Arial, sans-serif;
+      letter-spacing: 1.4px;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .hero__button span { font-size: 17px; transition: transform .2s ease; }
+    .hero__button:hover span { transform: translateX(5px); }
+
+    .hero__visual { position: relative; min-height: 610px; overflow: hidden; }
+
+    .hero__visual::before {
+      position: absolute;
+      inset: 9% 0 0 9%;
+      content: "";
+      background: var(--sun);
+      clip-path: polygon(16% 0, 100% 6%, 91% 100%, 0 87%);
+    }
+
+    .hero__photo {
+      position: absolute;
+      inset: 4% 5% 0 12%;
+      width: 88%;
+      height: 96%;
+      object-fit: cover;
+      object-position: center 20%;
+      mix-blend-mode: multiply;
+      filter: saturate(.82) contrast(1.05);
+      clip-path: polygon(17% 0, 100% 5%, 91% 100%, 0 88%);
+    }
+
+    .hero__number {
+      position: absolute;
+      right: 7%;
+      bottom: 3%;
+      color: var(--paper);
+      font: 700 clamp(80px, 13vw, 188px)/.8 Arial, sans-serif;
+      letter-spacing: 0;
+      opacity: .9;
+      text-shadow: 5px 5px 0 var(--forest);
+    }
+
+    .hero__caption {
+      position: absolute;
+      right: 16px;
+      bottom: 15px;
+      z-index: 1;
+      max-width: 210px;
+      color: var(--paper);
+      font: 10px/1.45 Arial, sans-serif;
+      text-align: right;
+    }
+
+    .hero__caption a { color: var(--lime); }
+
+    .profile {
+      display: grid;
+      grid-template-columns: minmax(180px, .72fr) 2fr;
+      gap: clamp(28px, 7vw, 100px);
+      padding: 82px clamp(22px, 8vw, 124px) 90px;
+      border-bottom: 1px solid rgba(23, 37, 31, .18);
+    }
+
+    .profile__label {
+      margin: 5px 0 0;
+      color: #a64b34;
+      font: 700 11px/1.4 Arial, sans-serif;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+    }
+
+    .profile__body { max-width: 740px; }
+
+    .profile h2 {
+      margin: 0 0 20px;
+      font-size: clamp(32px, 5vw, 60px);
+      font-weight: 400;
+      line-height: 1;
+    }
+
+    .profile__body > p {
+      max-width: 640px;
+      margin: 0;
+      color: var(--muted);
+      font: 16px/1.75 Arial, sans-serif;
+    }
+
+    .traits {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 38px;
+      border-top: 1px solid rgba(23, 37, 31, .2);
+    }
+
+    .trait { padding: 20px 20px 0 0; }
+    .trait + .trait { padding-left: 20px; border-left: 1px solid rgba(23, 37, 31, .2); }
+    .trait strong { display: block; margin-bottom: 8px; color: var(--forest); font-size: 20px; }
+    .trait span { color: var(--muted); font: 12px/1.55 Arial, sans-serif; }
+
+    .closing {
+      padding: 30px clamp(22px, 6vw, 88px);
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      color: var(--muted);
+      font: 11px/1.5 Arial, sans-serif;
+    }
+
+    @keyframes rise-in {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 760px) {
+      .masthead { min-height: 64px; padding: 16px 20px; }
+      .hero { grid-template-columns: 1fr; }
+      .hero__copy { padding: 66px 24px 24px; }
+      h1 { font-size: clamp(66px, 18vw, 112px); }
+      .hero__lead { max-width: 340px; }
+      .hero__visual { min-height: 470px; margin-top: -6px; }
+      .hero__visual::before { inset: 4% 2% 0 13%; }
+      .hero__photo { inset: 0 5% 0 15%; width: 85%; height: 100%; }
+      .hero__number { right: 8%; bottom: 5%; }
+      .profile { grid-template-columns: 1fr; gap: 18px; padding: 56px 24px 62px; }
+      .traits { grid-template-columns: 1fr; }
+      .trait, .trait + .trait { padding: 16px 0; border-left: 0; border-bottom: 1px solid rgba(23, 37, 31, .2); }
+      .closing { flex-direction: column; padding: 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <div class="masthead__mark"><span class="masthead__star" aria-hidden="true">★</span><span>Crônicas da bola</span></div>
+      <span class="masthead__label">Edição especial · humor</span>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero__copy">
+          <p class="eyebrow">ARROGANTI</p>
+          <h1 id="page-title">Pra que?<span>pô</span></h1>
+          <p class="hero__lead">Jogando a bola na maviê, é o craque neto, arrogantih, donde queres? estas seguros?</p>
+          <a class="hero__button" href="#perfil">Conheça o personagem <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="hero__visual">
+          <img class="hero__photo" src="{% static 'img/neymar.jpg' %}" alt="Neymar em campo" fetchpriority="high">
+          <span class="hero__number" aria-hidden="true">10</span>
+          <small class="hero__caption">Foto: Wikimedia Commons · <a href="https://commons.wikimedia.org/wiki/File:Neymar.jpg">Créditos e licença</a></small>
+        </div>
+      </section>
+
+      <section class="profile" id="perfil" aria-labelledby="profile-title">
+        <p class="profile__label">Perfil não autorizado<br>pela modéstia</p>
+        <div class="profile__body">
+          <h2 id="profile-title">A bola na maviê, é só uma criança</h2>
+          <p>Um gaucho neymar</p>
+          <div class="traits" aria-label="Traços do personagem fictício">
+            <div class="trait"><strong>Confiança</strong><span>Nível: Estas seguro</span></div>
+            <div class="trait"><strong>Holofotes</strong><span>pff arrogante</span></div>
+            <div class="trait"><strong>Modéstia</strong><span>Carregando… falta de arrogancia</span></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="closing">
+      <span>* Personagem satírico. As frases e situações desta página são fictícias.</span>
+      <a href="https://commons.wikimedia.org/wiki/File:Neymar.jpg">Créditos e licença da imagem</a>
+    </footer>
+  </div>
+
+  <audio controls>
+    <source src="{% static 'audio/neymaredit.mp3' %}" type="audio/mpeg">
+    Seu navegador não suporta o elemento de áudio.
+  </audio>
+</body>
+</html>

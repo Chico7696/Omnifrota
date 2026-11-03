@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>{% block title %} OmniFrota {% endblock %}</title> <!-- Permite que cada página substitua o título mantendo o padrão da aplicação. -->
+    {% load static %} <!-- Habilita a resolução de arquivos estáticos pelo Django. -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"> <!-- Aplica a folha de estilos compartilhada por todas as páginas. -->
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar">
+            <a class="sidebar-logo" href="{% url 'home' %}" aria-label="Ir para a página inicial"> <!-- Leva à página inicial e fornece um nome acessível ao link do logo. -->
+                <img src="{% static 'img/logo.png' %}" alt="OmniFrota">
+            </a>
+
+            <nav class="sidebar-menu">
+                {% if is_stock_employee %} <!-- Exibe a navegação de estoque apenas para esse perfil. -->
+                <a class="sidebar-link" href="{% url 'lista_pecas' %}"><span class="icon">▦</span><span class="label">Estoque</span></a>
+                <a class="sidebar-link" href="{% url 'pedidos' %}"><span class="icon">▣</span><span class="label">Pedidos</span></a>
+                <a class="sidebar-link" href="{% url 'chamados' %}"><span class="icon">✦</span><span class="label">Chamados</span></a>
+                <a class="sidebar-link" href="{% url 'relatorios' %}"><span class="icon">▤</span><span class="label">Relatórios</span></a>
+                <a class="sidebar-link" href="{% url 'fornecedores' %}"><span class="icon">☏</span><span class="label">Fornecedores</span></a>
+                <a class="sidebar-link" href="{% url 'equipamentos' %}"><span class="icon">✎</span><span class="label">Equipamentos</span></a>
+                {% endif %}
+                {% if is_budget_employee %} <!-- Restringe os links de orçamento ao perfil correspondente. -->
+                <a class="sidebar-link" href="{% url 'orcamento_form' %}"><span class="icon">◫</span><span class="label">Orçamentos</span></a>
+                <a class="sidebar-link" href="{% url 'orcamentos_historico' %}"><span class="icon">▤</span><span class="label">Histórico de orçamentos</span></a>
+                {% endif %}
+                {% if is_app_admin %} <!-- Mostra as ferramentas administrativas apenas para administradores. -->
+                <a class="sidebar-link" href="{% url 'gerenciar_cargos' %}"><span class="icon">⚙</span><span class="label">Gerenciar cargos</span></a>
+                <a class="sidebar-link" href="{% url 'resultados_testes' %}"><span class="icon">▤</span><span class="label">Resultados dos testes</span></a>
+                {% endif %}
+            </nav>
+        </aside>
+
+        <section class="app-content">
+            <header class="topbar">
+                <button class="sidebar-toggle" id="sidebarToggle" aria-controls="sidebar" aria-expanded="true" aria-label="Alternar menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <a class="topbar-logo" href="{% url 'home' %}" aria-label="Ir para a página inicial"></a>
+
+                <div class="header__actions">
+                    {% if user.is_authenticated %} <!-- Alterna entre sair e as opções públicas conforme o login. -->
+                    <form action="{% url 'logout' %}" method="POST">
+                        {% csrf_token %} <!-- Protege o envio do formulário de logout contra requisições forjadas. -->
+                        <button class="botao2" type="submit">SAIR</button>
+                    </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="botao1">Login</a>
+                        <a href="{% url 'registrar' %}" class="botao1">Registrar</a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <main>
+                {% if messages %} <!-- Renderiza avisos temporários enviados pelas views. -->
+                <ul class="messages">
+                    {% for message in messages %} <!-- Cria um item para cada aviso da sessão. -->
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% block content %} <!-- Ponto de inserção do conteúdo específico de cada página. -->
+                {% endblock %}
+            </main>
+
+            <footer><p>&copy; 2026 - OmniFrota</p></footer>
+        </section>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const appContent = document.querySelector('.app-content');
+
+        sidebarToggle.addEventListener('click', function () { // Sincroniza o estado visual e acessível do menu ao clicar.
+            const collapsed = sidebar.classList.toggle('collapsed');
+            appContent.classList.toggle('menu-collapsed', collapsed);
+            sidebarToggle.setAttribute('aria-expanded', String(!collapsed)); // Atualiza o estado anunciado por leitores de tela.
+        });
+    </script>
+</body>
+</html>
+
+        

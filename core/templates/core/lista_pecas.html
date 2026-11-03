@@ -1,0 +1,117 @@
+{% extends "core/base.html" %} <!-- Insere o conteúdo da listagem no layout compartilhado. -->
+{% load static %} <!-- Permite resolver o caminho da imagem padrão. -->
+
+{% block content %}
+<section class="estoque-page">
+  <header class="estoque-heading">
+    <div>
+      <p class="estoque-eyebrow">INVENTÁRIO</p>
+      <h1>Estoque de peças</h1>
+      <p>Pesquise, filtre e mantenha os cadastros de peças em dia.</p>
+    </div>
+    {% if perms.core.add_pecas %} <!-- Só oferece cadastro a quem possui a permissão de adicionar peças. -->
+    <a href="{% url 'adicionar_peca' %}" class="estoque-add-button">+ Adicionar peça</a>
+    {% endif %}
+  </header>
+
+  <form method="get" class="filtros-estoque"> <!-- Usa parâmetros na URL para aplicar e compartilhar os filtros. -->
+    <div class="filtro-campo filtro-busca">
+      <label for="busca-peca">Pesquisar peças</label>
+            <input id="busca-peca" type="search" name="q" value="{{ busca }}"
+              placeholder="Nome, categoria ou descrição"> <!-- Mantém o termo pesquisado visível após enviar o filtro. -->
+    </div>
+    <div class="filtro-campo">
+      <label for="categoria-peca">Categoria</label>
+      <select id="categoria-peca" name="categoria">
+        <option value="">Todas as categorias</option>
+        {% for categoria in categorias %} <!-- Monta a lista com as categorias disponíveis. -->
+          <option value="{{ categoria }}" {% if categoria == categoria_selecionada %}selected{% endif %}> <!-- Preserva a categoria escolhida na consulta atual. -->
+            {{ categoria }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filtro-campo">
+      <label for="ordenar-pecas">Ordenar por</label>
+      <select id="ordenar-pecas" name="ordenar"> <!-- Envia à view o campo e a direção usados para ordenar a listagem. -->
+        <option value="nome" {% if ordenar == 'nome' %}selected{% endif %}>Nome (A-Z)</option>
+        <option value="nome_desc" {% if ordenar == 'nome_desc' %}selected{% endif %}>Nome (Z-A)</option>
+        <option value="preco" {% if ordenar == 'preco' %}selected{% endif %}>Preço (crescente)</option>
+        <option value="preco_desc" {% if ordenar == 'preco_desc' %}selected{% endif %}>Preço (decrescente)</option>
+        <option value="quantidade" {% if ordenar == 'quantidade' %}selected{% endif %}>Quantidade (menor primeiro)</option>
+        <option value="quantidade_desc" {% if ordenar == 'quantidade_desc' %}selected{% endif %}>Quantidade (maior primeiro)</option>
+        <option value="categoria" {% if ordenar == 'categoria' %}selected{% endif %}>Categoria (A-Z)</option>
+        <option value="categoria_desc" {% if ordenar == 'categoria_desc' %}selected{% endif %}>Categoria (Z-A)</option>
+      </select>
+    </div>
+    <div class="filtros-acoes">
+      <button type="submit">Filtrar</button>
+      <a href="{% url 'lista_pecas' %}" class="limpar-filtros">Limpar</a> <!-- Remove os parâmetros atuais ao voltar à rota sem filtros. -->
+    </div>
+  </form>
+
+  <section class="estoque-lista">
+    <div class="estoque-lista__heading">
+      <div>
+        <h2>Peças cadastradas</h2>
+        <p>Resultados da busca e dos filtros selecionados.</p>
+      </div>
+      <span class="estoque-contador">{{ pecas_lista|length }} peça{{ pecas_lista|length|pluralize:"s" }}</span> <!-- Conta resultados e ajusta o plural conforme a quantidade. -->
+    </div>
+
+    <div class="estoque-tabela-wrap">
+      <table class="estoque-tabela">
+        <thead>
+          <tr>
+            <th>IMAGEM</th>
+            <th>PEÇA</th>
+            <th>CATEGORIA</th>
+            <th>PREÇO</th>
+            <th>QUANTIDADE</th>
+            {% if perms.core.change_pecas or perms.core.delete_pecas %} <!-- Inclui a coluna de ações apenas quando há permissão aplicável. -->
+            <th>AÇÕES</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for peca in pecas_lista %} <!-- Gera uma linha para cada peça filtrada. -->
+          <tr>
+            <td class="estoque-imagem">
+              {% if peca.imagem %} <!-- Usa a imagem cadastrada; se não houver, mostra a imagem padrão abaixo. -->
+                <img src="{{ peca.imagem.url }}" alt="{{ peca.nome }}">
+              {% else %}
+                <img src="{% static 'img/not_found.jpg' %}" alt="{{ peca.nome }}">
+              {% endif %}
+            </td>
+            <td class="estoque-nome">{{ peca.nome }}</td>
+            <td>{{ peca.categoria|default:"Sem categoria" }}</td>
+            <td class="estoque-preco">R$ {{ peca.preco }}</td>
+            <td><span class="estoque-quantidade">{{ peca.quantidade }}</span></td>
+            {% if perms.core.change_pecas or perms.core.delete_pecas %}
+            <td class="estoque-acoes">
+              <div class="estoque-acoes__botoes">
+                {% if perms.core.change_pecas %} <!-- Disponibiliza edição somente a usuários autorizados. -->
+                  <a href="{% url 'editar_peca' peca.id_peca %}" class="estoque-editar">Editar</a>
+                {% endif %}
+                {% if perms.core.delete_pecas %} <!-- Disponibiliza exclusão somente a usuários autorizados. -->
+                  <a href="{% url 'excluir_peca' peca.id_peca %}" class="estoque-excluir"
+                     onclick="return confirm('Excluir esta peça?');" aria-label="Excluir {{ peca.nome }}">Excluir</a> <!-- Pede confirmação antes de solicitar a exclusão. -->
+                {% endif %}
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% empty %} <!-- Apresenta a mensagem vazia quando nenhum item corresponde à busca. -->
+          <tr>
+            <td class="estoque-vazio" colspan="{% if perms.core.change_pecas or perms.core.delete_pecas %}6{% else %}5{% endif %}">
+              <strong>Nenhuma peça encontrada</strong>
+              <span>Tente alterar os filtros ou cadastrar uma peça.</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+{% endblock %}

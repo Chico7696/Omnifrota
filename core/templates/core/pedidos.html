@@ -1,0 +1,89 @@
+{% extends 'core/base.html' %} <!-- Usa o cabeçalho e a navegação globais do sistema. -->
+
+{% block content %}
+<section class="pedidos-page">
+  <header class="pedidos-heading">
+    <div>
+      <p class="pedidos-eyebrow">ESTOQUE</p>
+      <h1>Pedidos</h1>
+      <p>Solicite peças e acompanhe os pedidos realizados.</p>
+    </div>
+  </header>
+
+  <section class="pedidos-card"> <!-- Agrupa o formulário de criação de pedido. -->
+    <header class="pedidos-card__heading">
+    <h3>Fazer pedido de peças</h3>
+    <p>Selecione a peça e informe a quantidade e a previsão de entrega.</p>
+    </header>
+
+    <form method="post" class="pedidos-form"> <!-- Envia os dados do pedido à view. -->
+      {% csrf_token %} <!-- Protege o envio POST. -->
+      {{ form.as_p }} <!-- Renderiza os campos e erros definidos no formulário. -->
+      <button type="submit">Fazer pedido</button>
+    </form>
+  </section>
+
+  <section class="pedidos-lista">
+    <div class="pedidos-lista__heading">
+      <div>
+        <h2>Pedidos realizados</h2>
+        <p>Consulte quantidade, fornecedor, previsão e status.</p>
+      </div>
+      <span class="pedidos-contador">{{ pedidos_lista|length }} pedido{{ pedidos_lista|length|pluralize:"s" }}</span> <!-- Conta os pedidos exibidos e pluraliza o rótulo. -->
+    </div>
+
+    <div class="pedidos-table-wrap">
+      <table class="pedidos-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>PEÇA</th>
+            <th>QUANTIDADE</th>
+            <th>PREÇO UNITÁRIO</th>
+            <th>TOTAL</th>
+            <th>FORNECEDOR</th>
+            <th>PREVISÃO DE ENTREGA</th>
+            <th>STATUS</th>
+            <th>AÇÃO</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pedido in pedidos_lista %} <!-- Preenche uma linha da tabela para cada pedido. -->
+          <tr>
+            <td>#{{ pedido.id_pedido }}</td>
+            <td class="pedidos-table__peca">{{ pedido.id_peca.nome }}</td>
+            <td>{{ pedido.quantidade }}</td>
+            <td>R$ {{ pedido.preco }}</td>
+            <td class="pedidos-table__total">R$ {{ pedido.valor_total }}</td>
+            <td>{{ pedido.id_fornecedor.nome }}</td>
+            <td>{{ pedido.data_entrega|date:"d/m/Y" }}</td>
+            <td><span class="pedido-status pedido-status--{{ pedido.status }}">{{ pedido.get_status_display }}</span></td> <!-- Aplica a classe visual do status e mostra seu rótulo traduzido. -->
+            <td>
+              {% if pedido.status == 'enviado' %} <!-- Permite confirmar a entrega somente após o envio. -->
+              <form method="post" action="{% url 'marcar_pedido_entregue' pedido.id_pedido %}" class="pedido-entrega-form">
+                {% csrf_token %} <!-- Protege a atualização do status por POST. -->
+                <button type="submit">Marcar entregue</button>
+              </form>
+              {% elif pedido.status == 'pendente' %} <!-- Informa que o envio será processado automaticamente. -->
+              <span class="pedido-entregue-label">Envio automático em 3 dias</span>
+              {% elif pedido.status == 'entregue' %} <!-- Indica que o pedido já foi concluído. -->
+              <span class="pedido-entregue-label">Concluído</span>
+              {% else %}
+              <span>—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %} <!-- Mostra a mensagem de estado vazio quando não há pedidos. -->
+          <tr>
+            <td class="pedidos-vazio" colspan="9">
+              <strong>Nenhum pedido por enquanto</strong>
+              <span>Use o formulário acima para solicitar a primeira peça.</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+{% endblock %}

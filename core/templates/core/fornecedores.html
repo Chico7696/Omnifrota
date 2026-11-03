@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %} <!-- Herda a estrutura comum do sistema. -->
+
+{% block content %}
+<h2>FORNECEDORES</h2>
+
+<div class="card-list">
+  {% for fornecedor in fornecedores_lista %} <!-- Exibe um cartão para cada fornecedor cadastrado. -->
+  <div class="card">
+    <strong>{{ fornecedor.nome }}</strong>
+    <hr>
+    <p>Razão social: {{ fornecedor.razao_social }}</p>
+    <p>CNPJ: {{ fornecedor.cnpj }}</p>
+    <p>Contato: {{ fornecedor.contato }}</p>
+    <p>Endereço: {{ fornecedor.endereco }}</p>
+  </div>
+  {% empty %} <!-- Informa quando ainda não há fornecedores cadastrados. -->
+  <p>Nenhum fornecedor cadastrado.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}

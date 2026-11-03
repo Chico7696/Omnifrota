@@ -1,0 +1,67 @@
+{% extends 'core/base.html' %} <!-- Usa o layout padrão na página administrativa de testes. -->
+
+{% block title %}Resultados dos testes | OmniFrota{% endblock %} <!-- Define um título de aba específico para esta página. -->
+
+{% block content %}
+<section class="testes-page">
+  <header class="testes-heading">
+    <div>
+      <p class="testes-eyebrow">ADMINISTRAÇÃO</p>
+      <h1>Resultados dos testes</h1>
+      {% if resultado %} <!-- Mostra a data da última execução quando há relatório salvo. -->
+      <p>Última execução: {{ resultado.executado_em }}</p>
+      {% else %}
+      <p>Nenhuma execução registrada.</p>
+      {% endif %}
+    </div>
+    {% if resultado %} <!-- Só exibe o selo de situação após uma execução registrada. -->
+    <span class="testes-status {% if resultado.status == 'aprovado' %}testes-status--ok{% else %}testes-status--erro{% endif %}">
+      {% if resultado.status == 'aprovado' %}Aprovado{% else %}Com falhas{% endif %} <!-- Traduz o status geral em um rótulo legível. -->
+    </span>
+    {% endif %}
+  </header>
+
+  {% if resultado %} <!-- Renderiza os totais e casos apenas quando existe um resultado. -->
+  <section class="testes-resumo" aria-label="Resumo da execução">
+    <div class="testes-resumo__item"><span>Total</span><strong>{{ resultado.total }}</strong></div> <!-- Resume a quantidade total de testes executados. -->
+    <div class="testes-resumo__item"><span>Passaram</span><strong>{{ resultado.totais.passou }}</strong></div>
+    <div class="testes-resumo__item"><span>Falharam</span><strong>{{ resultado.totais.falhou }}</strong></div>
+    <div class="testes-resumo__item"><span>Erros</span><strong>{{ resultado.totais.erro }}</strong></div>
+    <div class="testes-resumo__item"><span>Ignorados</span><strong>{{ resultado.totais.ignorado }}</strong></div>
+  </section>
+
+  <section class="testes-lista">
+    <div class="testes-lista__heading">
+      <h2>Casos executados</h2>
+      <span>{{ resultado.casos|length }} caso{{ resultado.casos|length|pluralize:"s" }}</span>
+    </div>
+    <div class="testes-tabela-wrap">
+      <table class="testes-tabela">
+        <thead>
+          <tr><th>TESTE</th><th>RESULTADO</th></tr>
+        </thead>
+        <tbody>
+          {% for caso in resultado.casos %} <!-- Apresenta individualmente cada caso retornado pela execução. -->
+          <tr>
+            <td>
+              <strong>{{ caso.nome }}</strong>
+              <p class="testes-explicacao">{{ caso.explicacao }}</p>
+              {% if caso.detalhe %}<pre class="testes-detalhe">{{ caso.detalhe }}</pre>{% endif %} <!-- Inclui detalhes técnicos somente quando estão disponíveis. -->
+            </td>
+            <td><span class="testes-caso-status testes-caso-status--{{ caso.status }}">{{ caso.status|capfirst }}</span></td>
+          </tr>
+          {% empty %} <!-- Informa que há relatório, mas sem casos individuais listados. -->
+          <tr><td class="testes-vazio" colspan="2">A execução não retornou casos individuais.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% else %} <!-- Orienta a gerar uma execução quando ainda não existe relatório. -->
+  <section class="testes-sem-relatorio">
+    <h2>Relatório indisponível</h2>
+    <p>Execute a suíte de testes com <code>python manage.py test</code> para registrar os resultados aqui.</p>
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

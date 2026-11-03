@@ -1,0 +1,76 @@
+{% extends "core/base.html" %} <!-- Reutiliza o layout global na página de histórico. -->
+{% load static %} <!-- Habilita o carregamento local da biblioteca de gráficos. -->
+
+{% block content %}
+<section class="orcamentos-historico">
+  <header class="orcamento-heading">
+    <h1>Orçamentos anteriores</h1>
+    <p>Compare os orçamentos gerados pela IA e baixe cada um em PDF.</p>
+  </header>
+
+  {% if orcamentos %} <!-- Só apresenta tabela e gráfico quando existem orçamentos salvos. -->
+  <canvas id="graficoHistorico" height="120"></canvas>
+
+  <table style="margin-top:24px;">
+    <tr>
+      <th>ID</th>
+      <th>Veículo</th>
+      <th>Valor total</th>
+      <th>Data</th>
+      <th>Status</th>
+      <th>PDF</th>
+    </tr>
+    {% for orc in orcamentos %} <!-- Preenche uma linha com os dados e ações de cada orçamento. -->
+    <tr>
+      <td>{{ orc.id_orcamento }}</td>
+      <td>{{ orc.id_veiculo|default:"-" }}</td>
+      <td>R$ {{ orc.valor }}</td>
+      <td>{{ orc.data_orcamento|date:"d/m/Y" }}</td>
+      <td>{{ orc.get_status_display }}</td>
+      <td>
+        <a class="botao1" href="{% url 'orcamento_pdf' orc.id_orcamento %}">Baixar PDF</a> <!-- Gera o endereço do PDF para este registro específico. -->
+        <a class="botao1" href="{% url 'orcamento_grafico' orc.id_orcamento %}">Ver gráfico</a> <!-- Abre a visualização detalhada deste orçamento. -->
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  {{ rotulos|json_script:"rotulos-data" }} <!-- Serializa os rótulos como JSON seguro para uso no script. -->
+  {{ valores|json_script:"valores-data" }} <!-- Serializa os valores sem interpolá-los diretamente no JavaScript. -->
+
+  <script src="{% static 'js/chart.umd.min.js' %}"></script> <!-- Carrega a biblioteca Chart.js a partir dos arquivos estáticos. -->
+  <script>
+    const rotulos = JSON.parse(document.getElementById('rotulos-data').textContent); // Recupera do JSON os nomes exibidos no eixo do gráfico.
+    const valores = JSON.parse(document.getElementById('valores-data').textContent); // Recupera os valores correspondentes a cada orçamento.
+
+    if (typeof Chart === 'undefined') { // Exibe uma mensagem alternativa caso a biblioteca não esteja disponível.
+      document.getElementById('graficoHistorico').insertAdjacentHTML(
+        'afterend',
+        '<p class="erro-grafico">Não foi possível carregar a biblioteca de gráficos.</p>'
+      );
+    } else {
+    new Chart(document.getElementById('graficoHistorico'), { // Cria o gráfico de barras com os valores dos orçamentos.
+      type: 'bar',
+      data: {
+        labels: rotulos,
+        datasets: [{
+          label: 'Valor previsto (R$)',
+          data: valores,
+          backgroundColor: '#ffa832',
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+    }
+  </script>
+  {% else %} <!-- Oferece o caminho para criar o primeiro orçamento quando não há histórico. -->
+  <p>Nenhum orçamento calculado ainda.
+    <a href="{% url 'orcamento_form' %}">Calcular um novo orçamento</a>.
+  </p>
+  {% endif %}
+</section>
+{% endblock %}

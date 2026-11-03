@@ -1,0 +1,19 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+
+# Modelo treinado da IA preditiva (gerado por orcamentos.ia_preditiva)
+modelo_orcamento.joblib
+.test-results/
+
+# Ambiente virtual
+venv/
+.venv/
+env/
+
+# Banco de dados local (se sqlite for usado)
+db.sqlite3
+
+# Configuracoes de IDE
+.idea/
+.vscode/

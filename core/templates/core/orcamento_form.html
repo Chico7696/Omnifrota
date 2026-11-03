@@ -1,0 +1,52 @@
+{% extends "core/base.html" %} <!-- Usa a estrutura compartilhada para exibir o formulário. -->
+
+{% block content %}
+<section class="orcamento-page">
+  <header class="orcamento-heading">
+    <h1>Orçamento IA</h1>
+    <p>Informe os dados do veículo para calcular uma estimativa de orçamento.</p>
+  </header>
+
+  <form method="post" class="orcamento-form"> <!-- Envia os dados preenchidos para calcular a estimativa. -->
+    {% csrf_token %} <!-- Protege a requisição POST contra envios forjados. -->
+
+    {% if form.peca.field.queryset %} <!-- Mostra a seleção de peça apenas se o estoque tiver opções. -->
+    <fieldset class="orcamento-pecas">
+      <legend>Peça e quantidade</legend>
+      <p class="orcamento-pecas__help">
+        Escolha a peça do estoque e informe quantas unidades serão usadas.
+      </p>
+      <div class="orcamento-pecas__campos">
+        <p class="orcamento-pecas__campo">
+          {{ form.peca.label_tag }}
+          {{ form.peca }} <!-- Renderiza o seletor de peça definido no formulário Django. -->
+          {{ form.peca.errors }}
+        </p>
+        <p class="orcamento-pecas__campo">
+          {{ form.quantidade_utilizada.label_tag }}
+          {{ form.quantidade_utilizada }} <!-- Renderiza a quantidade da peça usada no cálculo. -->
+          {{ form.quantidade_utilizada.errors }}
+        </p>
+      </div>
+    </fieldset>
+    {% else %} <!-- Informa que não há peças disponíveis e orienta como prosseguir. -->
+    <p class="orcamento-pecas__vazio">
+      Nenhuma peça cadastrada no estoque.
+      {% if is_stock_employee %}<a href="{% url 'adicionar_peca' %}">Cadastrar peça</a>.{% else %}Solicite o cadastro à equipe de estoque.{% endif %}
+    </p>
+    {% endif %}
+
+    {% for field in form %} <!-- Percorre os demais campos do formulário, além de peça e quantidade. -->
+      {% if field.name != 'peca' and field.name != 'quantidade_utilizada' %} <!-- Evita renderizar novamente os campos já exibidos no bloco acima. -->
+      <p>
+        {{ field.label_tag }}
+        {{ field }}
+        {{ field.errors }}
+      </p>
+      {% endif %}
+    {% endfor %}
+    <button type="submit">Calcular orçamento</button>
+  </form>
+</section>
+
+{% endblock %}

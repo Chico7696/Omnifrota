@@ -1,0 +1,39 @@
+{% extends "core/base.html" %} <!-- Reutiliza a estrutura global da aplicação. -->
+
+{% block title %}Chamados | OmniFrota{% endblock %}
+
+{% block content %}
+<section class="chamados-page">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">REQUISIÇÃO OPERACIONAL</p>
+      <h1>Solicitar peça</h1>
+      <p class="page-description">Peça um equipamento para manusear uma peça do estoque e informe o destino.</p>
+    </div>
+    <span class="status-badge">Novo chamado</span>
+  </div>
+
+  <form method="post" class="chamado-form" novalidate> <!-- Envia a requisição sem recarregar validação HTML nativa, usando os erros do Django. -->
+    {% csrf_token %} <!-- Inclui o token de segurança exigido por envios POST. -->
+    {% if form.non_field_errors %} <!-- Mostra erros que não pertencem a um campo específico. -->
+      <div class="form-errors">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="form-grid">
+      {% for field in form %} <!-- Monta os campos definidos no formulário da view. -->
+        <div class="form-field{% if field.name == 'id_peca' %} form-field-wide{% endif %}">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %} <!-- Exibe a orientação do campo somente quando ela existe. -->
+          {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %} <!-- Lista as validações que falharam para este campo. -->
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="form-actions">
+      <span class="required-note">A solicitação será aberta com status “Aberta”.</span>
+      <button type="submit">Enviar requisição</button>
+    </div>
+  </form>
+
+{% endblock %}

@@ -1,0 +1,19 @@
+{% load static %} <!-- Permite resolver os caminhos de CSS e imagens pela configuração do Django. -->
+<!DOCTYPE html> <!-- Declara o documento no padrão HTML5. -->
+<html lang="pt-br"> <!-- Informa ao navegador e às tecnologias assistivas que o conteúdo está em português. -->
+<head>
+    <meta charset="UTF-8"> <!-- Garante a exibição correta de acentos e outros caracteres. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Ajusta a escala da página para telas móveis. -->
+    <title>{{ error_title }} | OmniFrota</title> <!-- Define o título da aba usando o título do erro enviado pela view. -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"> <!-- Carrega os estilos compartilhados da aplicação. -->
+</head>
+<body class="erro-acesso"> <!-- Aplica os estilos específicos da tela de acesso negado. -->
+    <main class="erro-acesso__cartao"> <!-- Marca o conteúdo principal e agrupa os detalhes do erro. -->
+        <img src="{% static 'img/logo_preta.png' %}" alt="OmniFrota" class="erro-acesso__logo"> <!-- Exibe o logo e fornece um texto alternativo acessível. -->
+        <p class="erro-acesso__codigo">Erro {{ error_code }}</p> <!-- Mostra o código de erro recebido pela view. -->
+        <h1>{{ error_title }}</h1> <!-- Exibe o título principal do erro. -->
+        <p>{{ error_message }}</p> <!-- Apresenta a mensagem explicativa recebida pela view. -->
+        <a href="{% url 'login' %}" class="botao1">Retornar à página de login</a> <!-- Gera o link para a rota de login pelo nome definido no Django. -->
+    </main>
+</body>
+</html>

@@ -1,0 +1,42 @@
+{% extends 'core/base.html' %} <!-- Mantém o cabeçalho e a navegação compartilhados. -->
+
+{% block content %}
+<h2>EQUIPAMENTOS</h2>
+
+<table>
+  <tr>
+    <th>ID EQUIPAMENTO</th>
+    <th>NOME</th>
+    <th>FUNÇÃO</th>
+    <th>STATUS</th>
+    <th>ID PEÇA</th>
+    {% if is_app_admin %}<th>AÇÃO</th>{% endif %} <!-- A coluna de edição só existe para administradores. -->
+  </tr>
+  {% for equipamento in equipamentos_lista %} <!-- Gera uma linha para cada equipamento enviado pela view. -->
+  <tr>
+    <td>{{ equipamento.id_equipamento }}</td>
+    <td>{{ equipamento.nome }}</td>
+    <td>{{ equipamento.funcao }}</td>
+    <td>{{ equipamento.status_exibicao }}</td>
+    <td>{{ equipamento.id_peca_id }}</td>
+    {% if is_app_admin %} <!-- Permite alterar o status somente ao perfil administrativo. -->
+    <td>
+      <form class="equipamento-status-form" method="post" action="{% url 'alterar_status_equipamento' equipamento.id_equipamento %}">
+        {% csrf_token %} <!-- Protege a atualização enviada por POST. -->
+        <label class="sr-only" for="status-equipamento-{{ equipamento.id_equipamento }}">Status do equipamento {{ equipamento.id_equipamento }}</label>
+        <select id="status-equipamento-{{ equipamento.id_equipamento }}" name="status"> <!-- Associa um seletor único ao equipamento desta linha. -->
+          <option value="disponivel" {% if equipamento.status_edicao == 'disponivel' %}selected{% endif %}>Disponível</option>
+          <option value="em uso" {% if equipamento.status_edicao == 'em uso' %}selected{% endif %}>Em Uso</option>
+          <option value="manutencao" {% if equipamento.status_edicao == 'manutencao' %}selected{% endif %}>Manutenção</option>
+        </select>
+        <button type="submit">Atualizar</button>
+      </form>
+    </td>
+    {% endif %}
+  </tr>
+  {% empty %} <!-- Apresenta uma resposta quando a lista não contém equipamentos. -->
+  <tr><td colspan="{% if is_app_admin %}6{% else %}5{% endif %}">Nenhum equipamento cadastrado.</td></tr>
+  {% endfor %}
+</table>
+
+{% endblock %}

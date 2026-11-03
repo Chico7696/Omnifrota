@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %} <!-- Mantém o formulário dentro do layout compartilhado. -->
+
+{% block content %}
+<section class="peca-page">
+    <header class="peca-heading">
+        <p class="peca-eyebrow">ESTOQUE</p>
+        <h1>{% if modo == 'editar' %}Editar peça{% else %}Adicionar peça{% endif %}</h1> <!-- Ajusta o título ao modo de edição ou criação. -->
+        <p>Preencha os dados para manter o cadastro da peça atualizado.</p>
+    </header>
+
+    <form method="post" enctype="multipart/form-data" class="peca-form"> <!-- Habilita o envio de campos e arquivos de imagem. -->
+        {% csrf_token %} <!-- Protege o envio POST do formulário. -->
+        {% if modo == 'editar' and peca.imagem %} <!-- Exibe a prévia somente ao editar uma peça com imagem salva. -->
+        <div class="peca-preview-card">
+            <img class="peca-preview" src="{{ peca.imagem.url }}" alt="{{ peca.nome }}">
+            <span>Imagem atual</span>
+        </div>
+        {% endif %}
+        {{ form.as_p }} {# Renderiza os campos do formulário Django com seus rótulos e validações. #}
+        <div class="peca-form-actions">
+            <a href="{% url 'lista_pecas' %}" class="peca-cancelar">Cancelar</a> <!-- Descarta a edição e retorna à listagem. -->
+            <button type="submit">Salvar peça</button>
+        </div>
+    </form>
+</section>
+
+{% endblock %}

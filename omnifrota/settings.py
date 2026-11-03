@@ -137,3 +137,45 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+
+# ---- Producao (Azure) ----
+import os
+
+if os.environ.get("DJANGO_SECRET_KEY"):
+    SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+if "DJANGO_DEBUG" in os.environ:
+    DEBUG = os.environ["DJANGO_DEBUG"] == "1"
+if os.environ.get("DJANGO_ALLOWED_HOSTS"):
+    ALLOWED_HOSTS = os.environ["DJANGO_ALLOWED_HOSTS"].split(",")
+if os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS"):
+    CSRF_TRUSTED_ORIGINS = os.environ["DJANGO_CSRF_TRUSTED_ORIGINS"].split(",")
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+if os.environ.get("DB_HOST"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": os.environ["DB_NAME"],
+            "USER": os.environ["DB_USER"],
+            "PASSWORD": os.environ["DB_PASSWORD"],
+            "HOST": os.environ["DB_HOST"],
+            "PORT": os.environ.get("DB_PORT", "3306"),
+            "OPTIONS": {
+                "charset": "utf8mb4",
+                **({"ssl_mode": "REQUIRED"} if os.environ.get("DB_SSL", "1") == "1" else {}),
+            },
+        }
+    }
+
+_ws = "whitenoise.middleware.WhiteNoiseMiddleware"
+if _ws not in MIDDLEWARE:
+    MIDDLEWARE.insert(1, _ws)
+
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
